@@ -20,11 +20,10 @@ echo -e "\n\n\n";
 echo " 			Installing Apache... "
 
 # Install apache2
-
+add-apt-repository ppa:ondrej/apache2
+apt-get update
 apt-get install -y apache2 ntp zip unzip ncdu htop mysql-client
-apt-get install libapache2-mod-php7.0 -y
-apt-get install libapache2-modsecurity -y
-
+a2enmod http2
 
 echo -e "\n\n\n"
 echo "			Apache Installed	"
@@ -32,9 +31,12 @@ echo -e "\n\n\n"
 echo  "			Installing PHP 7..."
 echo -e "\n\n\n"
 #install php7
-
-apt-get -y install php7.0-cli php7.0-common libapache2-mod-php7.0 php7.0 php7.0-mysql php7.0-curl php7.0-gd php7.0-bz2 libapache2-mod-security2
-apt-get remove php7.0-snmp -y
+apt-get install python-software-properties
+add-apt-repository ppa:ondrej/php
+apt-get update 
+apt-get install -y php7.2
+apt-get -y install php7.2-cli php7.2-common libapache2-mod-php7.2 php7.2-mysql php7.2-curl php7.2-gd php7.2-bz2 libapache2-mod-security2
+apt-get remove php7.2-snmp -y
 
 echo -e "\n\n\n"
 echo "			PHP 7 Installed.	"
@@ -47,7 +49,7 @@ echo -e "\n\n\n"
 # Enable Various module's
 echo "Enabling Various Modules"
 
-a2enmod php7.0
+a2enmod php7.2
 
 a2enmod rewrite
 a2enmod security2
@@ -60,20 +62,20 @@ echo "		Required Modules Enabled"
 echo -e "\n\n\n"
 
 # Increase post_max_size to 20 M
-if grep -q "post_max_size = 20M" /etc/php/7.0/apache2/php.ini
+if grep -q "post_max_size = 20M" /etc/php/7.2/apache2/php.ini
    then
      echo "1.Already exist"
 else 
-    sed -i 's/post_max_size = 8M/post_max_size = 20M/'  /etc/php/7.0/apache2/php.ini
+    sed -i 's/post_max_size = 8M/post_max_size = 20M/'  /etc/php/7.2/apache2/php.ini
 fi
 
 #Increase upload_max_size
 
-if grep -q "upload_max_filesize = 20M" /etc/php/7.0/apache2/php.ini
+if grep -q "upload_max_filesize = 20M" /etc/php/7.2/apache2/php.ini
 then
   echo "2.Already exist"
 else 
-  sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 20M/'  /etc/php/7.0/apache2/php.ini
+  sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 20M/'  /etc/php/7.2/apache2/php.ini
 fi
 #Increase KeepAliveTimeout
 if grep -q "KeepAliveTimeout 60" /etc/apache2/apache2.conf
@@ -141,6 +143,8 @@ then
 else 
    echo " TraceEnable off" >>/etc/apache2/apache2.conf
 fi
+
+
 #Enable Public IP Logging
 if grep -q "X-Forwarded-For" /etc/apache2/apache2.conf
 then 
@@ -161,6 +165,14 @@ fi
 echo " 			Restarting Apache "
 echo -e "\n\n\n"
 
+#Enable http2
+if grep -q "Protocols h2 http/1.1" /etc/apache2/apache2.conf
+then
+   echo "14.Already Exist"
+else
+   echo "Protocols h2 http/1.1" >>/etc/apache2/apache2.conf
+fi
+
 systemctl restart apache2
 
 echo "			Apache Restarted"
@@ -175,19 +187,19 @@ echo -e "\n\n\n\n\n\n"
 #echo " Please enter the name of user: "
 # Take input from user
 
-usr_name=ubuntu
+#usr_name=ubuntu
 
 # Create a directory for user
 
 #mkdir -p /var/www/html/
 
 # Make a new user and  set his Password
-useradd $usr_name -d /var/www/html -s /bin/bash
+#useradd $usr_name -d /var/www/html -s /bin/bash
 
 # Changing WebServer Ownership
 chown -R ubuntu:ubuntu /var/www/html/
 usermod -g www-data ubuntu 
-echo "$usr_name:$usr_name-&g67i^GUTFvgyuw6tu&iet6#@"|chpasswd
+#echo "$usr_name:$usr_name-&g67i^GUTFvgyuw6tu&iet6#@"|chpasswd
 
 
 # Enable SSH login
